@@ -16,12 +16,12 @@ public abstract class State
     public STATE state;
     public EVENT currentEvent;
     public State nextState;
-    public AI controller;
+    public AI bot;
     public Transform player;
    
-    public State(AI controller, Transform player)
+    public State(AI bot, Transform player)
     {
-        this.controller = controller;
+        this.bot = bot;
         this.player = player;
     }
 
@@ -42,17 +42,18 @@ public abstract class State
 
     public virtual void Enter()
     {
+        //DO THINGS IN ENTER METHOD
         currentEvent = EVENT.UPDATE;        
     }
 
     public virtual void Update()
     {
-
+        //DO THINGS IN UPDATE METHOD
     }
 
     public virtual void Exit()
     {
-
+        //DO THINGS IN EXIT METHOD
     }
 }
 
@@ -64,13 +65,14 @@ public class Idle : State
     public float detectionDegree = 60f;
     public float detectionDistance = 7f;
 
-    public Idle(AI controller, Transform player) : base (controller, player)
+    public Idle(AI bot, Transform player) : base (bot, player)
     {
         state = STATE.IDLE;
     }
 
     public override void Enter()
     {
+        //Random waiting time for Idle event
         idleTime = Random.Range(1, 4);
         base.Enter();
     }
@@ -78,14 +80,11 @@ public class Idle : State
     public override void Update()
     {
         timer += Time.deltaTime;
+
+        //When finished idle time
         if(timer >= idleTime)
         {
-            nextState = new Patrol(controller, player);
-            currentEvent = EVENT.EXIT;
-        }
-        else if(Input.GetKeyDown(KeyCode.A))
-        {
-            nextState = new Attack(controller, player);
+            nextState = new Patrol(bot, player);
             currentEvent = EVENT.EXIT;
         }
         
@@ -94,91 +93,96 @@ public class Idle : State
         base.Update();
     }
 
+    //Measure distance between player and bot
     public void DistanceDetection()
     {
-        Vector3 playerPos = new Vector3(player.position.x, controller.transform.position.y, player.position.z);
+        Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float angle = Vector3.Angle(playerPos - controller.transform.position, controller.transform.forward);
-        float distance = Vector3.Distance(playerPos, controller.transform.position);
+        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
+        float distance = Vector3.Distance(playerPos, bot.transform.position);
 
         if (angle <= detectionDegree && distance < detectionDistance)
         {
             //DETECTED
-            nextState = new Chase(controller, player);
+            nextState = new Chase(bot, player);
             currentEvent = EVENT.EXIT;
         }        
     }
     public override void Exit()
     {
-        Debug.Log("IDLE: Exit");
         base.Exit();
     }
 }
 
 public class Patrol : State
 {
-    public int waypointIndex;
+    public int waypointIndex = 0;
     public float speed = 5f;
     public float rotationSpeed = 4f;
 
     public float detectionDegree = 60f;
     public float detectionDistance = 7f;
 
-    public Patrol(AI controller, Transform player) : base (controller, player)
+    public Patrol(AI bot, Transform player) : base (bot, player)
     {
         state = STATE.PATROL;
     }
 
+    //Start on random waypoint
     public override void Enter()
     {
         waypointIndex = Random.Range(0, 4);
-        Debug.Log("PATROL: Enter");
         base.Enter();
     }
 
     public void PatrolWaypoint()
     {
         //Patrol
-        if (Vector3.Distance(controller.transform.position, controller.waypoints[waypointIndex].position) < 2f)
+        if (Vector3.Distance(bot.transform.position, bot.waypoints[waypointIndex].position) < 2f)
         {
             int previousIndex = waypointIndex;
+            //Set random waypoint
             waypointIndex = Random.Range(0, 4);
 
+            //if we get same number, increase it one 
             if (previousIndex == waypointIndex)
             {
                 waypointIndex++;
 
-                if (waypointIndex >= controller.waypoints.Length)
+                if (waypointIndex >= bot.waypoints.Length)
                 {
                     waypointIndex = 0;
                 }
             }
 
+            // 40% chance to be idle on waypoint
             if(Random.Range(0, 100) < 40)
             {
-                nextState = new Idle(controller, player);
+                nextState = new Idle(bot, player);
                 currentEvent = EVENT.EXIT;
                 return;
             }
         }
 
-        controller.transform.Translate(controller.transform.forward * speed * Time.deltaTime, Space.World);
+        //Movement
+        bot.transform.Translate(bot.transform.forward * speed * Time.deltaTime, Space.World);
 
-        Quaternion lookAtWP = Quaternion.LookRotation(controller.waypoints[waypointIndex].position - controller.transform.position);
-        controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, lookAtWP, Time.deltaTime * rotationSpeed);        
+        Quaternion lookAtWP = Quaternion.LookRotation(bot.waypoints[waypointIndex].position - bot.transform.position);
+        bot.transform.rotation = Quaternion.Slerp(bot.transform.rotation, lookAtWP, Time.deltaTime * rotationSpeed);        
     }
 
+    //Measure distance between player and bot
     public void DistanceDetection()
     {
-        Vector3 playerPos = new Vector3(player.position.x, controller.transform.position.y, player.position.z);
+        Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float angle = Vector3.Angle(playerPos - controller.transform.position, controller.transform.forward);
-        float distance = Vector3.Distance(playerPos, controller.transform.position);
+        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
+        float distance = Vector3.Distance(playerPos, bot.transform.position);
 
         if (angle <= detectionDegree && distance < detectionDistance)
         {
             //DETECTED
-            nextState = new Chase(controller, player);
+            nextState = new Chase(bot, player);
             currentEvent = EVENT.EXIT;
         }        
     }
@@ -187,12 +191,12 @@ public class Patrol : State
     {
         if(Input.GetKeyDown(KeyCode.I))
         {
-            nextState = new Idle(controller, player);
+            nextState = new Idle(bot, player);
             currentEvent = EVENT.EXIT;
         }
         else if(Input.GetKeyDown(KeyCode.A))
         {
-            nextState = new Attack(controller, player);
+            nextState = new Attack(bot, player);
             currentEvent = EVENT.EXIT;
         }
 
@@ -204,7 +208,6 @@ public class Patrol : State
 
     public override void Exit()
     {
-        Debug.Log("PATROL: Exit");
         base.Exit();
     }
 }
@@ -214,14 +217,13 @@ public class Attack : State
     public float attackDistance = 3f;
     public float attackDegree = 20f;
 
-    public Attack(AI controller, Transform player) : base (controller, player)
+    public Attack(AI bot, Transform player) : base (bot, player)
     {
         state = STATE.ATTACK;
     }
 
     public override void Enter()
     {
-        Debug.Log("ATTACK: Enter");
         base.Enter();
     }
 
@@ -229,11 +231,10 @@ public class Attack : State
     {
         if(Input.GetKeyDown(KeyCode.I))
         {
-            nextState = new Idle(controller, player);
+            nextState = new Idle(bot, player);
             currentEvent = EVENT.EXIT;
         }
         
-        Debug.Log("ATTACK: Update");
         DistanceDetection();
 
         base.Update();
@@ -241,21 +242,20 @@ public class Attack : State
 
     public override void Exit()
     {
-        Debug.Log("ATTACK: Exit");
         base.Exit();
     }
 
     void DistanceDetection()
     {
-        Vector3 playerPos = new Vector3(player.position.x, controller.transform.position.y, player.position.z);
+        Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float distance = Vector3.Distance(playerPos, controller.transform.position);
-        float angle = Vector3.Angle(playerPos - controller.transform.position, controller.transform.forward);
+        float distance = Vector3.Distance(playerPos, bot.transform.position);
+        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
 
         if (distance >= attackDistance || angle > attackDegree)
         {
             //DETECTED
-            nextState = new Chase(controller, player);
+            nextState = new Chase(bot, player);
             currentEvent = EVENT.EXIT;
         }  
     }
@@ -268,16 +268,15 @@ public class Chase : State
 
     public float attackDegree = 20f;
     public float attackDistance = 3f;
-    public float giveUpDistance = 9f;
+    public float escapeDistance = 9f;
 
-    public Chase(AI controller, Transform player) : base (controller, player)
+    public Chase(AI bot, Transform player) : base (bot, player)
     {
         state = STATE.CHASE;
     }
 
     public override void Enter()
     {
-        Debug.Log("Chase: Enter");
         base.Enter();
     }
 
@@ -285,7 +284,7 @@ public class Chase : State
     {
         if(Input.GetKeyDown(KeyCode.I))
         {
-            nextState = new Idle(controller, player);
+            nextState = new Idle(bot, player);
             currentEvent = EVENT.EXIT;
         }
         
@@ -297,36 +296,35 @@ public class Chase : State
 
     void Pursue()
     {
-        controller.transform.Translate(controller.transform.forward * speed * Time.deltaTime, Space.World);
+        bot.transform.Translate(bot.transform.forward * speed * Time.deltaTime, Space.World);
 
-        Quaternion lookAtWP = Quaternion.LookRotation(player.position - controller.transform.position);
-        controller.transform.rotation = Quaternion.Slerp(controller.transform.rotation, lookAtWP, Time.deltaTime * rotationSpeed);  
+        Quaternion lookAtWP = Quaternion.LookRotation(player.position - bot.transform.position);
+        bot.transform.rotation = Quaternion.Slerp(bot.transform.rotation, lookAtWP, Time.deltaTime * rotationSpeed);  
     }
 
     void DistanceDetection()
     {
-        Vector3 playerPos = new Vector3(player.position.x, controller.transform.position.y, player.position.z);
+        Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float angle = Vector3.Angle(playerPos - controller.transform.position, controller.transform.forward);
-        float distance = Vector3.Distance(playerPos, controller.transform.position);
+        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
+        float distance = Vector3.Distance(playerPos, bot.transform.position);
 
         if (angle <= attackDegree && distance < attackDistance)
         {
             //DETECTED
-            nextState = new Attack(controller, player);
+            nextState = new Attack(bot, player);
             currentEvent = EVENT.EXIT;
         }  
 
-        if (distance >= giveUpDistance)
+        if (distance >= escapeDistance)
         {
-            nextState = new Patrol(controller, player);
+            nextState = new Patrol(bot, player);
             currentEvent = EVENT.EXIT;
         }
     }
 
     public override void Exit()
     {
-        Debug.Log("Chase: Exit");
         base.Exit();
     }
 }

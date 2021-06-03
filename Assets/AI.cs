@@ -5,15 +5,16 @@ using UnityEngine.UI;
 
 public class AI : MonoBehaviour
 {
-    State currentState;
-
     public Transform[] waypoints;
+
+    State currentState;
     public Transform player;
     float detectionDegree = 60f;
     public float detectionDistance = 7f;
+    public float escapeDistance = 9f;
     Color lineColor = Color.green;
 
-    [SerializeField] Text distanceText;
+    [SerializeField] Text playerText;
     [SerializeField] Text botText;
 
     void Start()
@@ -23,14 +24,7 @@ public class AI : MonoBehaviour
 
     void Update()
     {
-        currentState = currentState.Process();        
-
-        /*
-        transform.Translate(transform.forward * 5 * Time.deltaTime, Space.World);
-
-        Quaternion lookAtWP = Quaternion.LookRotation(player.position - transform.position);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookAtWP, Time.deltaTime * 3);   
-        */
+        currentState = currentState.Process();       
 
         DebugDraw();
     }
@@ -54,12 +48,12 @@ public class AI : MonoBehaviour
         {
             lineColor = Color.red;
         }   
-        else if(distance > 9f)
+        else if(distance > escapeDistance)
         {
             lineColor = Color.green;
         }
 
-        distanceText.text = "Distance: " + distance.ToString("F2") + "\nAngle: " + angle.ToString("F2") + "°";
+        playerText.text = "Distance: " + distance.ToString("F2") + "\nAngle: " + angle.ToString("F2") + "°";
         botText.text = "State: " + currentState.state.ToString();
     }
 }

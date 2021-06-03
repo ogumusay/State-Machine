@@ -832,7 +832,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1169752852}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.71, y: 1.056, z: -1.57}
+  m_LocalPosition: {x: -7.26, y: 1.056, z: -6.56}
   m_LocalScale: {x: 1, y: 0.5, z: 1}
   m_Children:
   - {fileID: 1505634037}
@@ -1266,7 +1266,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1912109280}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.23, y: 1.5, z: 7.15}
+  m_LocalPosition: {x: 2.6, y: 1.5, z: 0.91}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1091758943}
@@ -1292,7 +1292,8 @@ MonoBehaviour:
   - {fileID: 3154124}
   player: {fileID: 1169752856}
   detectionDistance: 7
-  distanceText: {fileID: 551742919}
+  escapeDistance: 9
+  playerText: {fileID: 551742919}
   botText: {fileID: 1650732602}
 --- !u!1 &2021709814
 GameObject:

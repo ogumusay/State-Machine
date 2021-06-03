@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class UI : MonoBehaviour
-{
-    
+{    
     Camera cam;
 
     void Start()
@@ -12,7 +11,6 @@ public class UI : MonoBehaviour
         cam = Camera.main;
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.LookAt(cam.transform);
