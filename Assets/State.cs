@@ -118,11 +118,13 @@ public class Idle : State
     {
         Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
         float distance = Vector3.Distance(playerPos, bot.transform.position);
 
         if (distance < detectionDistance)
         {
+        
+            float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
+            
             if (angle <= detectionDegree)
             {
                 Vector3 dir = (playerPos - bot.transform.position);
@@ -218,11 +220,12 @@ public class Patrol : State
     {
         Vector3 playerPos = new Vector3(player.position.x, bot.transform.position.y, player.position.z);
 
-        float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
         float distance = Vector3.Distance(playerPos, bot.transform.position);
 
         if (distance < detectionDistance)
         {
+            float angle = Vector3.Angle(playerPos - bot.transform.position, bot.transform.forward);
+    
             if (angle <= detectionDegree)
             {
                 Vector3 dir = (playerPos - bot.transform.position);
